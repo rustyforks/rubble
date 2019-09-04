@@ -1,0 +1,46 @@
+[package]
+authors = ["Jonas Schievink <jonasschievink@gmail.com>"]
+description = "Rubble demo showing build.rs-based service generation"
+categories = ["embedded", "no-std"]
+keywords = ["arm", "nrf", "bluetooth", "low", "energy"]
+repository = "https://github.com/jonas-schievink/rubble/"
+license = "0BSD"
+name = "nrf52810-codegen"
+version = "0.0.0"
+edition = "2018"
+publish = false
+
+[dependencies]
+rubble = { path = "../../rubble", default-features = false }
+rubble-nrf52 = { path = "../../rubble-nrf52", features = ["52810"] }
+demo-utils = { path = "../demo-utils" }
+cortex-m = "0.6.0"
+cortex-m-semihosting = "0.3.3"
+cortex-m-rtfm = "0.4.3"
+cortex-m-rt = "0.6.8"
+nrf52810-hal = { version = "0.8.1", features = ["rt"] }
+byteorder = { version = "1.3.1", default-features = false }
+panic-semihosting = "0.5.2"
+
+[dependencies.bbqueue]
+git = "https://github.com/jonas-schievink/bbqueue.git"
+branch = "rubble"
+
+[dependencies.log]
+version = "0.4.6"
+features = ["release_max_level_warn"]
+optional = true
+
+[build-dependencies]
+rubble-codegen = { path = "../../rubble-codegen" }
+
+[features]
+# Note: To turn this default feature off you must run Cargo from inside the `rubble-demo` directory,
+# not from the workspace root.
+default = ["rubble/log", "log"]
+
+# Disable documentation to avoid spurious rustdoc warnings
+[[bin]]
+name = "nrf52810-codegen"
+doc = false
+test = false

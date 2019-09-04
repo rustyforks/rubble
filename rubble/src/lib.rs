@@ -29,6 +29,8 @@
 mod log;
 #[macro_use]
 mod utils;
+#[macro_use]
+mod include;
 pub mod att;
 pub mod beacon;
 pub mod bytes;

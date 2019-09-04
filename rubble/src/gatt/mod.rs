@@ -4,6 +4,7 @@
 //! interaction
 
 pub mod characteristic;
+pub mod service;
 
 use {
     crate::{

@@ -1,0 +1,17 @@
+[package]
+authors = ["Jonas Schievink <jonasschievink@gmail.com>"]
+description = "Build-script code generation for the Rubble BLE stack"
+categories = ["embedded", "no-std"]
+keywords = ["arm", "ble", "bluetooth", "low", "energy"]
+repository = "https://github.com/jonas-schievink/rubble/"
+readme = "../README.md"
+license = "0BSD"
+name = "rubble-codegen"
+version = "0.0.1"
+edition = "2018"
+
+[dependencies]
+rubble = { path = "../rubble", version = "0.0.3", default-features = false }
+bitflags = "1.0.4"
+log = "0.4.6"
+uuid = { version = "0.7.4", default-features = false }
