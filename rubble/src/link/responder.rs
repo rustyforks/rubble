@@ -4,8 +4,9 @@ use crate::{
     l2cap::{L2CAPState, L2CAPStateTx},
     link::{
         data::{Llid, Pdu},
-        llcp::ControlPdu,
+        llcp::{self, ConnectionParamRequest, ControlPdu},
         queue::{Consume, Consumer, Producer},
+        Connection,
     },
     utils::HexSlice,
     Error,
@@ -97,6 +98,21 @@ impl<C: Config> Responder<C> {
         self.l2cap.tx(&mut self.tx)
     }
 
+    /// Provides raw access to the Link Layer Control Protocol (LLCP).
+    ///
+    /// If the link layer has already initiated an LLCP procedure and is waiting for the response,
+    /// an error will be returned.
+    pub fn llcp<'a>(&'a mut self, conn: &'a mut Connection<C>) -> Result<LLCPTx<'a, C>, Error> {
+        if conn.llcp_initiated {
+            Err(Error::InvalidState)
+        } else {
+            Ok(LLCPTx {
+                producer: &mut self.tx,
+                link: conn,
+            })
+        }
+    }
+
     /// A helper method that splits `self` into the `rx` and the remaining `Self`.
     ///
     /// This can possibly be removed after *RFC 2229 (Closures Capture Disjoint Fields)* is
@@ -106,5 +122,30 @@ impl<C: Config> Responder<C> {
         let result = f(&mut rx, self);
         self.rx = Some(rx);
         result
+    }
+}
+
+pub struct LLCPTx<'a, C: Config> {
+    producer: &'a mut C::PacketProducer,
+    link: &'a mut Connection<C>,
+}
+
+impl<'a, C: Config> LLCPTx<'a, C> {
+    /// Returns a reference to the link layer connection state.
+    pub fn connection(&self) -> &Connection<C> {
+        self.link
+    }
+
+    /// Start a *Connection Parameters Request Procedure*, requesting a change in connection
+    /// parameters.
+    pub fn request_conn_params(self, params: ConnectionParamRequest) -> Result<(), Error> {
+        self.link.llcp_initiated = true;
+
+        let cpdu = llcp::ControlPdu::ConnectionParamReq(params);
+        self.producer.produce_with(cpdu.encoded_size(), |writer| {
+            cpdu.to_bytes(writer)?;
+            Ok(Llid::Control)
+        })?;
+        Ok(())
     }
 }

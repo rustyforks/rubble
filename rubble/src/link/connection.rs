@@ -54,8 +54,17 @@ pub struct Connection<C: Config> {
     /// Whether we have ever received a data packet in this connection.
     received_packet: bool,
 
+    /// Reading end of the queue for outgoing packets.
     tx: C::PacketConsumer,
+
+    /// Writing end of the queue for incoming packets.
     rx: C::PacketProducer,
+
+    /// Whether this link layer has initiated an LLCP procedure by sending a request packet.
+    ///
+    /// If this is `true`, no LLCP procedure may be started. It is set to `false` when the response
+    /// to the initiated procedure is received.
+    pub(crate) llcp_initiated: bool,
 
     /// LLCP connection update data received in a previous LL Control PDU.
     ///
@@ -101,6 +110,7 @@ impl<C: Config> Connection<C> {
 
             tx,
             rx,
+            llcp_initiated: false,
             update_data: None,
 
             _p: PhantomData,
@@ -450,6 +460,7 @@ impl<C: Config> Connection<C> {
                     sub_vers_nr: Hex(sub_vers_nr),
                 }
             }
+            ControlPdu::ConnectionParamRsp(params) => return Ok(None),
             _ => ControlPdu::UnknownRsp {
                 unknown_type: pdu.opcode(),
             },

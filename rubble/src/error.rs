@@ -12,6 +12,9 @@ pub enum Error {
     /// Invalid value supplied for field.
     InvalidValue,
 
+    /// An object is in an invalid state to perform an action.
+    InvalidState,
+
     /// Unexpectedly reached EOF while reading or writing data.
     ///
     /// This is returned when the application tries to fit too much data into a
@@ -31,6 +34,7 @@ impl fmt::Display for Error {
         f.write_str(match self {
             Error::InvalidLength => "invalid length value specified",
             Error::InvalidValue => "invalid value for field",
+            Error::InvalidState => "invalid state",
             Error::Eof => "end of buffer",
             Error::IncompleteParse => "excess data in buffer",
             Error::__Nonexhaustive => unreachable!(),
